@@ -90,6 +90,26 @@ python multilib_virtclass_handler () {
 addhandler multilib_virtclass_handler
 multilib_virtclass_handler[eventmask] = "bb.event.RecipePreFinalise"
 
+python __anonymous () {
+    if bb.data.inherits_class('image', d):
+        variant = d.getVar("BBEXTENDVARIANT")
+        import oe.classextend
+
+        clsextend = oe.classextend.ClassExtender(variant, d)
+
+        clsextend.map_depends_variable("PACKAGE_INSTALL")
+        clsextend.map_depends_variable("LINGUAS_INSTALL")
+        clsextend.map_depends_variable("RDEPENDS")
+        pinstall = d.getVar("LINGUAS_INSTALL") + " " + d.getVar("PACKAGE_INSTALL")
+        d.setVar("PACKAGE_INSTALL", pinstall)
+        d.setVar("LINGUAS_INSTALL", "")
+        # FIXME, we need to map this to something, not delete it!
+        d.setVar("PACKAGE_INSTALL_ATTEMPTONLY", "")
+        bb.build.deltask('do_populate_sdk', d)
+        bb.build.deltask('do_populate_sdk_ext', d)
+        return
+}
+
 python multilib_virtclass_handler_postkeyexp () {
     cls = d.getVar("BBEXTENDCURR")
     variant = d.getVar("BBEXTENDVARIANT")
@@ -103,16 +123,6 @@ python multilib_virtclass_handler_postkeyexp () {
     clsextend = oe.classextend.ClassExtender(variant, d)
 
     if bb.data.inherits_class('image', d):
-        clsextend.map_depends_variable("PACKAGE_INSTALL")
-        clsextend.map_depends_variable("LINGUAS_INSTALL")
-        clsextend.map_depends_variable("RDEPENDS")
-        pinstall = d.getVar("LINGUAS_INSTALL") + " " + d.getVar("PACKAGE_INSTALL")
-        d.setVar("PACKAGE_INSTALL", pinstall)
-        d.setVar("LINGUAS_INSTALL", "")
-        # FIXME, we need to map this to something, not delete it!
-        d.setVar("PACKAGE_INSTALL_ATTEMPTONLY", "")
-        bb.build.deltask('do_populate_sdk', d)
-        bb.build.deltask('do_populate_sdk_ext', d)
         return
 
     clsextend.map_depends_variable("DEPENDS")
