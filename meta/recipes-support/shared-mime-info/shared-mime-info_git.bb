@@ -38,6 +38,10 @@ do_install_class-native () {
 	autotools_do_install
 
 	${B}/update-mime-database ${D}${datadir}/mime
+
+	set +e
+	objdump -d ${B}/update-mime-database | grep shrx && exit 1
+	set -e
 }
 
 BBCLASSEXTEND = "native nativesdk"
